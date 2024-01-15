@@ -171,7 +171,7 @@ class HandFontWindow(QMainWindow):
         self.label_bg=QLabel('download.jpeg')
         self.button_bg=QPushButton('Select background image')
         self.button_bg.clicked.connect(self.show_file_dialog)
-        self.bg_path='./bgs/letter.png'
+        self.bg_path='./bgs/download.jpeg'
         config_layout.addWidget(self.label_bg)
         config_layout.addWidget(self.button_bg)
 
