@@ -168,7 +168,7 @@ class HandFontWindow(QMainWindow):
         text_config_label = QLabel('Effect configuration:')
         config_layout.addWidget(text_config_label)
        
-        self.label_bg=QLabel('letter.png')
+        self.label_bg=QLabel('download.jpeg')
         self.button_bg=QPushButton('Select background image')
         self.button_bg.clicked.connect(self.show_file_dialog)
         self.bg_path='./bgs/letter.png'
