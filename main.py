@@ -8,6 +8,68 @@ from PyQt6.QtGui import (QGuiApplication,QPixmap,
                          QPainter, QImage, QFont, 
                          QKeySequence,QShortcut,QFont, 
                          QFontDatabase,QColor,QIcon)
+import mysql.connector
+class LoginDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+         # Tambahkan atribut db_connection di sini
+        self.db_connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="",
+            database="handwriting"
+        )
+
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle('Login')
+        self.setGeometry(100, 100, 300, 150)
+
+        self.username_label = QLabel('Username:', self)
+        self.username_input_line = QLineEdit(self)
+        self.username_input_line.setPlaceholderText('Enter your username')
+        username_input_layout = QHBoxLayout()
+        username_input_layout.addWidget(self.username_label)
+        username_input_layout.addWidget(self.username_input_line)
+
+        self.password_label = QLabel('Password:', self)
+        self.password_input_line = QLineEdit(self)
+        self.password_input_line.setPlaceholderText('Enter your password')
+        self.password_input_line.setEchoMode(QLineEdit.EchoMode.Password)
+        password_input_layout = QHBoxLayout()
+        password_input_layout.addWidget(self.password_label)
+        password_input_layout.addWidget(self.password_input_line)
+
+        self.login_button = QPushButton('Login', self)
+        self.login_button.clicked.connect(self.authenticate)
+        self.exit_button = QPushButton('Exit', self)
+        self.exit_button.clicked.connect(self.reject)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.login_button)
+        button_layout.addWidget(self.exit_button)
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(username_input_layout)
+        main_layout.addLayout(password_input_layout)
+        main_layout.addLayout(button_layout)
+
+        self.setLayout(main_layout)
+
+    def authenticate(self):
+        username = self.username_input_line.text()
+        password = self.password_input_line.text()
+
+        cursor = self.db_connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))
+        user = cursor.fetchone()
+        cursor.close()
+
+        if user:
+            self.accept()
+        else:
+            QMessageBox.warning(self, 'Authentication Failed', 'Invalid username or password', QMessageBox.StandardButton.Ok)
 
 class ImageCreator(QDialog):
     def __init__(self):
@@ -203,9 +265,7 @@ class HandFontWindow(QMainWindow):
         self.label_text=QLabel('text to display:')
         self.text_edit = QTextEdit(self)
         self.text_edit.setPlaceholderText('text to display')
-        self.text_edit.setText('''It took me a day to talk to gpt3.5 and make hundreds of sentences, revise and revise, and finally achieve this effect.
-My handwriting has always been poor, and I hate writing. I spend a lot of time practicing calligraphy, but my handwriting is worse than good. So when I saw the possibility of generating handwritten pictures, I couldn't wait to try it.
-When I was halfway through, I suddenly thought if there was something already done online. Indeed, I was a little disappointed, but after taking a closer look, I found that its supposed operation was a bit more complicated than mine, so I continued to finish it and the result is now.''')
+        self.text_edit.setText(''' My Github https://github.com/syahrulrmdhncode''')
         # text_edit.toPlainText()
         self.text_edit.textChanged.connect(self.updateView)
         config_layout.addWidget(self.label_text)
@@ -505,5 +565,13 @@ class GraphicsView(QGraphicsView):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    viewer = HandFontWindow()
-    sys.exit(app.exec())
+
+    # Show the login dialog first
+    login_dialog = LoginDialog()
+    if login_dialog.exec() == QDialog.DialogCode.Accepted:
+        # If login is successful, show the main window
+        viewer = HandFontWindow()
+        sys.exit(app.exec())
+    else:
+        # If login is failed or canceled, exit the application
+        sys.exit()
